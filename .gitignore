@@ -27,6 +27,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Prisma generated client (re-created by `npm run prisma:generate`)
+backend/src/generated/
+
 # Caches
 .cache/
 .npm

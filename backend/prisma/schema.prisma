@@ -1,0 +1,80 @@
+// Prisma schema — see https://pris.ly/d/prisma-schema
+//
+// Mirrors the domain in `src/modules/generations`: one `Generation` per KIE
+// task, holding the tracks its webhook deliveries bring in.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+  runtime      = "nodejs"
+
+  // Extensionless relative imports so ts-node and ts-jest resolve the
+  // generated sources as CommonJS, same as `nest build` does.
+  importFileExtension = ""
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Mirrors `KieTaskState`.
+enum GenerationState {
+  waiting
+  queuing
+  generating
+  success
+  fail
+}
+
+/// One music generation, keyed on our own id and KIE's `taskId`.
+model Generation {
+  id     String          @id @default(uuid())
+  taskId String          @unique
+  state  GenerationState @default(waiting)
+
+  /// Suno model the task was queued with, e.g. `V5`.
+  model        String
+  instrumental Boolean @default(false)
+  customMode   Boolean @default(false)
+  prompt       String?
+  title        String?
+  style        String?
+  lyrics       String?
+  negativeTags String?
+
+  failReason String?
+  /// Seconds spent generating, once finished.
+  costTime   Int?
+
+  tracks Track[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  @@index([state])
+  @@index([createdAt])
+}
+
+/// A single audio result. `id` is KIE's track id, which is stable across the
+/// `first` and `complete` webhook deliveries, so re-deliveries upsert.
+model Track {
+  id           String     @id
+  generationId String
+  generation   Generation @relation(fields: [generationId], references: [id], onDelete: Cascade)
+
+  title          String?
+  tags           String?
+  /// Seconds.
+  duration       Float?
+  audioUrl       String?
+  streamAudioUrl String?
+  imageUrl       String?
+  modelName      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([generationId])
+}

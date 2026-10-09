@@ -56,15 +56,16 @@ export class GenerationsController {
    */
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
-  handleWebhook(
+  async handleWebhook(
     @Body(CALLBACK_PIPE) payload: KieMusicCallbackPayload,
     @Query('secret') secret?: string,
-  ): { received: true } {
+  ): Promise<{ received: true }> {
     this.assertCallbackSecret(secret);
-    this.generationsService.handleCallback(payload);
+    await this.generationsService.handleCallback(payload);
 
-    // Acknowledge regardless of the task outcome: a non-2xx here just makes
-    // KIE redeliver a payload we have already processed.
+    // Acknowledge regardless of the task outcome — a failed generation is
+    // still a delivery we handled. A write that throws, on the other hand,
+    // is left to bubble up so KIE redelivers.
     return { received: true };
   }
 

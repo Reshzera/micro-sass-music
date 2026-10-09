@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Jest runs on CommonJS: `@nestjs/config` v12 is ESM-only, so ts-jest has
+    // to down-compile it (and our sources) rather than preserve its imports.
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolvePackageJsonExports": false,
+    "allowJs": true,
+    "checkJs": false,
+    "declaration": false,
+    "incremental": false
+  },
+  "include": ["src/**/*", "test/**/*"]
+}

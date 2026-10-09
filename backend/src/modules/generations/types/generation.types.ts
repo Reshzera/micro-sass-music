@@ -1,4 +1,4 @@
-import type { KieTaskState } from '../../../externals/kieClient/types/kie-task.types';
+import type { GenerationState } from '../../../generated/prisma/client';
 
 export interface GenerationTrack {
   id: string;
@@ -18,13 +18,14 @@ export interface GenerationAccepted {
 
 export interface GenerationStatus {
   taskId: string;
-  state: KieTaskState;
+  state: GenerationState;
   tracks: GenerationTrack[];
   failReason: string | null;
   /** Seconds spent generating, once finished. */
   costTime: number | null;
-  createdAt: number;
-  completedAt: number | null;
+  /** Serialized as an ISO-8601 string. */
+  createdAt: Date;
+  completedAt: Date | null;
 }
 
 /** Normalized form of one KIE webhook delivery. */
